@@ -10,7 +10,7 @@ import com.assessment.notification.exception.DuplicateNotificationException;
 import com.assessment.notification.exception.InvalidMessageException;
 import com.assessment.notification.repository.NotificationRepository;
 import com.assessment.notification.service.NotificationService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationServiceImpl.class);

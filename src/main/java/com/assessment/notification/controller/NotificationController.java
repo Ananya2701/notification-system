@@ -5,6 +5,7 @@ import com.assessment.notification.dto.NotificationResponseDto;
 import com.assessment.notification.dto.PagedResponse;
 import com.assessment.notification.entity.NotificationStatus;
 import com.assessment.notification.entity.NotificationType;
+import com.assessment.notification.queue.NotificationQueueService;
 import com.assessment.notification.service.NotificationService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -18,11 +19,13 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final NotificationQueueService queueService;
 
     @PostMapping
     public ResponseEntity<NotificationResponseDto> createNotification(
             @Valid @RequestBody NotificationRequestDto requestDto) {
         NotificationResponseDto created = notificationService.createNotification(requestDto);
+        queueService.enqueue(created.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 

@@ -61,8 +61,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public PagedResponse<NotificationResponseDto> fetchNotifications(
-            NotificationStatus status, NotificationType type, int page, int size) {
+    public PagedResponse<NotificationResponseDto> fetchNotifications(NotificationStatus status, NotificationType type, int page, int size) {
 
 
         Pageable pageable = PageRequest.of(page, size);

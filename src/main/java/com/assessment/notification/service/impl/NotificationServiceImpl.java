@@ -2,8 +2,10 @@ package com.assessment.notification.service.impl;
 
 import com.assessment.notification.dto.NotificationRequestDto;
 import com.assessment.notification.dto.NotificationResponseDto;
+import com.assessment.notification.dto.PagedResponse;
 import com.assessment.notification.entity.Notification;
 import com.assessment.notification.entity.NotificationStatus;
+import com.assessment.notification.entity.NotificationType;
 import com.assessment.notification.exception.DuplicateNotificationException;
 import com.assessment.notification.exception.InvalidMessageException;
 import com.assessment.notification.repository.NotificationRepository;
@@ -11,10 +13,15 @@ import com.assessment.notification.service.NotificationService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -51,6 +58,26 @@ public class NotificationServiceImpl implements NotificationService {
         log.info("Notification created id={} userId={} type={}", saved.getId(), saved.getUserId(), saved.getType());
 
         return toResponseDto(saved);
+    }
+
+    @Override
+    public PagedResponse<NotificationResponseDto> fetchNotifications(
+            NotificationStatus status, NotificationType type, int page, int size) {
+
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Notification> result = notificationRepository.fetchNotifications(status, type, pageable);
+
+        List<NotificationResponseDto> content = result.getContent().stream()
+                .map(this::toResponseDto)
+                .toList();
+
+        return PagedResponse.<NotificationResponseDto>builder()
+                .content(content)
+                .page(result.getNumber())
+                .size(result.getSize())
+                .totalElements(result.getTotalElements())
+                .build();
     }
 
     private void rejectIfDuplicate(NotificationRequestDto requestDto) {

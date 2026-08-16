@@ -23,12 +23,14 @@ public class Notification {
     @Column(nullable = false)
     private Long userId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private NotificationType type;
 
-    @Column(nullable = false, columnDefinition = "Message")
+    @Column(nullable = false)
     private String message;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private NotificationStatus status;
 

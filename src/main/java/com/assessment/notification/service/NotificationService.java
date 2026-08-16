@@ -11,4 +11,5 @@ public interface NotificationService {
     NotificationResponseDto createNotification(NotificationRequestDto requestDto);
 
     PagedResponse<NotificationResponseDto> fetchNotifications(NotificationStatus status, NotificationType type, int page, int size);
+    NotificationResponseDto retryNotification(Long id);
 }

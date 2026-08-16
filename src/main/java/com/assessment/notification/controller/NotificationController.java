@@ -39,4 +39,11 @@ public class NotificationController {
                 notificationService.fetchNotifications(status, type, page, size);
         return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/{id}/retry")
+    public ResponseEntity<NotificationResponseDto> retryNotification(@PathVariable Long id) {
+        NotificationResponseDto retried = notificationService.retryNotification(id);
+        queueService.enqueue(retried.getId());
+        return ResponseEntity.ok(retried);
+    }
 }

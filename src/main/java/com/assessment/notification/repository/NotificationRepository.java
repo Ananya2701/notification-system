@@ -24,4 +24,9 @@ public interface NotificationRepository
     Page<Notification> fetchNotifications(@Param("status") NotificationStatus status,
                                           @Param("type") NotificationType type,
                                           Pageable pageable);
+    long countByType(NotificationType type);
+
+    long countByTypeAndStatus(NotificationType type, NotificationStatus status);
+
+    long countByStatus(NotificationStatus status);
 }

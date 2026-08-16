@@ -8,6 +8,8 @@ import com.assessment.notification.entity.NotificationStatus;
 import com.assessment.notification.entity.NotificationType;
 import com.assessment.notification.exception.DuplicateNotificationException;
 import com.assessment.notification.exception.InvalidMessageException;
+import com.assessment.notification.exception.NotificationNotFoundException;
+import com.assessment.notification.exception.RetryNotEligibleException;
 import com.assessment.notification.repository.NotificationRepository;
 import com.assessment.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     private static final long BUFFER_TIME = 5;
     private static final int MAX_ALLOWED_REPEATS = 3;
+    private static final int MAX_RETRY_ATTEMPTS = 3;
+    private static final long RETRY_BUFFER = 2;
 
     private final NotificationRepository notificationRepository;
 
@@ -77,6 +81,40 @@ public class NotificationServiceImpl implements NotificationService {
                 .size(result.getSize())
                 .totalElements(result.getTotalElements())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public NotificationResponseDto retryNotification(Long id) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new NotificationNotFoundException(id));
+
+        validateRetryEligibility(notification);
+
+        notification.setRetryCount(notification.getRetryCount() + 1);
+        notification.setLastRetryAt(LocalDateTime.now());
+        notification.setStatus(NotificationStatus.RETRYING);
+        notification.setUpdatedAt(LocalDateTime.now());
+
+        Notification saved = notificationRepository.save(notification);
+        log.info("Notification id={} retrying, attempt={}/{}", saved.getId(), saved.getRetryCount(), MAX_RETRY_ATTEMPTS);
+
+        return toResponseDto(saved);
+    }
+
+    private void validateRetryEligibility(Notification notification) {
+        if (notification.getStatus() != NotificationStatus.FAILED) {
+            throw new RetryNotEligibleException("Only notifications in FAILED status can be retried. Current status: " + notification.getStatus());
+        }
+
+        if (notification.getRetryCount() >= MAX_RETRY_ATTEMPTS) {
+            throw new RetryNotEligibleException("Maximum retry attempts: " + MAX_RETRY_ATTEMPTS + " reached");
+        }
+
+        LocalDateTime lastRetryAt = notification.getLastRetryAt();
+        if (lastRetryAt != null && lastRetryAt.isAfter(LocalDateTime.now().minusMinutes(RETRY_BUFFER))) {
+            throw new RetryNotEligibleException("Retry must be attempted after " + RETRY_BUFFER + " minutes of earlier retry");
+        }
     }
 
     private void rejectIfDuplicate(NotificationRequestDto requestDto) {

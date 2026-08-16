@@ -44,6 +44,18 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, message);
     }
 
+    @ExceptionHandler(NotificationNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(NotificationNotFoundException ex) {
+        log.warn("Not found: {}", ex.getMessage());
+        return build(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(RetryNotEligibleException.class)
+    public ResponseEntity<ErrorResponse> handleRetryNotEligible(RetryNotEligibleException ex) {
+        log.warn("Retry rejected: {}", ex.getMessage());
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message) {
         ErrorResponse body = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())

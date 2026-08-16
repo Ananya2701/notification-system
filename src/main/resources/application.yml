@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: notification-system
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/smart_notification_db
+    username: root
+    password: {PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+logging:
+  level:
+    com.assessment.notification: INFO
+    org.hibernate.SQL: DEBUG
